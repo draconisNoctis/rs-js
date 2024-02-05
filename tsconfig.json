@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "lib": ["ESNext"],
+        "module": "CommonJS",
+        "target": "esnext",
+        "moduleResolution": "Node",
+        "moduleDetection": "force",
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
+        "composite": true,
+        "strict": true,
+        "downlevelIteration": true,
+        "skipLibCheck": true,
+        "jsx": "react-jsx",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowJs": true,
+        "types": [
+            "bun-types" // add Bun global
+        ]
+    }
+}
