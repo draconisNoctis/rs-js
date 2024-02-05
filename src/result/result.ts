@@ -64,14 +64,14 @@ export interface Result<T, E> {
     /**
      * Returns the contained `Ok` value.
      *
-     * @throw {Error} if the result is `Err`
+     * @throws {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error Error} if the result is `Err`
      */
     unwrap(): T;
 
     /**
      * Returns the contained `Err` value.
      *
-     * @throw {Error} if the result is `Ok`
+     * @throws {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error Error} if the result is `Ok`
      */
     unwrapErr(): E;
 }

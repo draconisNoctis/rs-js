@@ -1,6 +1,11 @@
 import type { Err, Ok, Result } from './result';
 
 export interface AsyncResult<T, E> extends PromiseLike<Result<T, E>> {
+    /**
+     * Calls `fn` if the resolved result is `Ok`, otherwise returns `this` as `Err`
+     *
+     * `fn` *must* return a `Result` or `PromiseLike<Result>`.
+     */
     andThen<T2>(fn: (val: T) => Ok<T2>): AsyncResult<T2, E>;
     andThen<T2>(fn: (val: T) => PromiseLike<Ok<T2>>): AsyncResult<T2, E>;
     andThen<E2>(fn: (val: T) => Err<E2>): AsyncErr<E | E2>;
@@ -9,6 +14,11 @@ export interface AsyncResult<T, E> extends PromiseLike<Result<T, E>> {
     andThen<T2, E2>(fn: (val: T) => PromiseLike<Result<T2, E2>>): AsyncResult<T2, E | E2>;
     andThen<T2, E2>(fn: (val: T) => Result<T2, E2> | PromiseLike<Result<T2, E2>>): AsyncResult<T2, E | E2>;
 
+    /**
+     * Calls `fn` if the resolved result is `Err`, otherwise returns `this` as `Ok`
+     *
+     * `fn` *must* return a `Result` or `PromiseLike<Result>`.
+     */
     orElse<T2>(fn: (err: E) => Ok<T2>): AsyncOk<T | T2>;
     orElse<T2>(fn: (err: E) => PromiseLike<Ok<T2>>): AsyncOk<T | T2>;
     orElse<E2>(fn: (err: E) => Err<E2>): AsyncResult<T, E2>;
@@ -34,14 +44,14 @@ export interface AsyncResult<T, E> extends PromiseLike<Result<T, E>> {
     /**
      * Returns a `Promise` of the contained `Ok` value.
      *
-     * @throw {Error} if the result is `Err`
+     * @throws {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error Error} if the result is `Err`
      */
     unwrap(): PromiseLike<T>;
 
     /**
      * Returns a `Promise` of the contained `Err` value.
      *
-     * @throw {Error} if the result is `Ok`
+     * @throws {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error Error} if the result is `Ok`
      */
     unwrapErr(): PromiseLike<E>;
 }
