@@ -1,42 +1,91 @@
 import assert from 'node:assert';
 import { isPromise, toString } from '../utils';
-import { AsyncResult, AsyncResultImpl, MaybeAsyncErr, MaybeAsyncOk, MaybeAsyncResult } from './async-result';
+import { AsyncErr, AsyncOk, AsyncResult, AsyncResultImpl } from './async-result';
 
 export interface Result<T, E> {
+    /**
+     * Returns `true` if the result is `Ok`
+     */
     isOk(): this is Ok<T>;
+
+    /**
+     * Returns `true` if the result is `Err`
+     */
     isErr(): this is Err<E>;
 
+    /**
+     * Calls `fn` if the result is `Ok`, otherwise returns `this` as `Err`
+     *
+     * `fn` can return a `Promise` which will return a `AsyncResult`.
+     * `fn` *must* return a `Result` or `PromiseLike<Result>`.
+     */
     andThen<T2>(fn: (val: T) => Ok<T2>): Result<T2, E>;
-    andThen<T2>(fn: (val: T) => PromiseLike<Ok<T2>>): MaybeAsyncResult<T2, E>;
+    andThen<T2>(fn: (val: T) => PromiseLike<Ok<T2>>): AsyncResult<T2, E>;
     andThen<E2>(fn: (val: T) => Err<E2>): Err<E | E2>;
-    andThen<E2>(fn: (val: T) => PromiseLike<Err<E2>>): MaybeAsyncErr<E | E2>;
+    andThen<E2>(fn: (val: T) => PromiseLike<Err<E2>>): AsyncErr<E | E2>;
     andThen<T2, E2>(fn: (val: T) => Result<T2, E2>): Result<T2, E | E2>;
-    andThen<T2, E2>(fn: (val: T) => PromiseLike<Result<T2, E2>>): MaybeAsyncResult<T2, E | E2>;
+    andThen<T2, E2>(fn: (val: T) => PromiseLike<Result<T2, E2>>): AsyncResult<T2, E | E2>;
     andThen<T2, E2>(fn: (val: T) => Result<T2, E2> | PromiseLike<Result<T2, E2>>): Result<T2, E | E2> | AsyncResult<T2, E | E2>;
 
+    /**
+     * Calls `fn` if the result is `Err`, otherwise returns `this` as `Ok`
+     *
+     * `fn` can return a `Promise` which will return a `AsyncResult`.
+     * `fn` *must* return a `Result` or `PromiseLike<Result>`.
+     */
     orElse<T2>(fn: (err: E) => Ok<T2>): Ok<T | T2>;
-    orElse<T2>(fn: (err: E) => PromiseLike<Ok<T2>>): MaybeAsyncOk<T | T2>;
+    orElse<T2>(fn: (err: E) => PromiseLike<Ok<T2>>): AsyncOk<T | T2>;
     orElse<E2>(fn: (err: E) => Err<E2>): Result<T, E2>;
-    orElse<E2>(fn: (err: E) => PromiseLike<Err<E2>>): MaybeAsyncResult<T, E2>;
+    orElse<E2>(fn: (err: E) => PromiseLike<Err<E2>>): AsyncResult<T, E2>;
     orElse<T2, E2>(fn: (err: E) => Result<T2, E2>): Result<T | T2, E2>;
-    orElse<T2, E2>(fn: (err: E) => PromiseLike<Result<T2, E2>>): MaybeAsyncResult<T | T2, E2>;
+    orElse<T2, E2>(fn: (err: E) => PromiseLike<Result<T2, E2>>): AsyncResult<T | T2, E2>;
     orElse<T2, E2>(fn: (err: E) => Result<T2, E2> | PromiseLike<Result<T2, E2>>): Result<T | T2, E2> | AsyncResult<T | T2, E2>;
 
-    map<T2>(fn: (val: T) => PromiseLike<T2>): MaybeAsyncResult<T2, E>;
+    /**
+     * Calls `fn` if the result is `Ok`, otherwise returns `this` as `Err`
+     *
+     * `fn` can return a `Promise` which will return a `AsyncResult`.
+     * `fn` *must not* fail and therefor have to return a `T2` or `PromiseLike<T2>`.
+     */
+    map<T2>(fn: (val: T) => PromiseLike<T2>): AsyncResult<T2, E>;
     map<T2>(fn: (val: T) => T2): Result<T2, E>;
     map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Result<T2, E> | AsyncResult<T2, E>;
 
-    mapErr<E2>(fn: (err: E) => PromiseLike<E2>): MaybeAsyncResult<T, E2>;
+    /**
+     * Calls `fn` if the result is `Err`, otherwise returns `this` as `Ok`
+     *
+     * `fn` can return a `Promise` which will return a `AsyncResult`.
+     * `fn` *must not* fail and therefor have to return a `E2` or `PromiseLike<E2>`.
+     */
+    mapErr<E2>(fn: (err: E) => PromiseLike<E2>): AsyncResult<T, E2>;
     mapErr<E2>(fn: (err: E) => E2): Result<T, E2>;
     mapErr<E2>(fn: (err: E) => E2 | PromiseLike<E2>): Result<T, E2> | AsyncResult<T, E2>;
 
+    /**
+     * Returns the contained `Ok` value.
+     *
+     * @throw {Error} if the result is `Err`
+     */
     unwrap(): T;
+
+    /**
+     * Returns the contained `Err` value.
+     *
+     * @throw {Error} if the result is `Ok`
+     */
     unwrapErr(): E;
 }
 
+/**
+ * Contains the success value
+ */
 export interface Ok<T> extends Result<T, never> {
     value: T;
 }
+
+/**
+ * Contains the error value
+ */
 export interface Err<E> extends Result<never, E> {
     error: E;
     stack: string;
@@ -88,15 +137,15 @@ export class ResultImpl<T, E> implements Result<T, E> {
     }
 
     andThen<T2>(fn: (val: T) => Ok<T2>): Result<T2, E>;
-    andThen<T2>(fn: (val: T) => PromiseLike<Ok<T2>>): MaybeAsyncResult<T2, E>;
+    andThen<T2>(fn: (val: T) => PromiseLike<Ok<T2>>): AsyncResult<T2, E>;
     andThen<E2>(fn: (val: T) => Err<E2>): Err<E | E2>;
-    andThen<E2>(fn: (val: T) => PromiseLike<Err<E2>>): MaybeAsyncErr<E | E2>;
+    andThen<E2>(fn: (val: T) => PromiseLike<Err<E2>>): AsyncErr<E | E2>;
     andThen<T2, E2>(fn: (val: T) => Result<T2, E2>): Result<T2, E | E2>;
-    andThen<T2, E2>(fn: (val: T) => PromiseLike<Result<T2, E2>>): MaybeAsyncResult<T2, E | E2>;
+    andThen<T2, E2>(fn: (val: T) => PromiseLike<Result<T2, E2>>): AsyncResult<T2, E | E2>;
     andThen<T2, E2>(fn: (val: T) => Result<T2, E2> | PromiseLike<Result<T2, E2>>): Result<T2, E | E2> | AsyncResult<T2, E | E2>;
     andThen<T2, E2>(
         fn: (val: T) => Result<T2, E2> | PromiseLike<Result<T2, E2>>
-    ): Result<T2, E | E2> | AsyncResult<T2, E | E2> | MaybeAsyncResult<T2, E> {
+    ): Result<T2, E | E2> | AsyncResult<T2, E | E2> | AsyncResult<T2, E> {
         if (this.isErr()) return this;
 
         let result = fn(this.value);
@@ -109,15 +158,15 @@ export class ResultImpl<T, E> implements Result<T, E> {
     }
 
     orElse<T2>(fn: (err: E) => Ok<T2>): Ok<T | T2>;
-    orElse<T2>(fn: (err: E) => PromiseLike<Ok<T2>>): MaybeAsyncOk<T | T2>;
+    orElse<T2>(fn: (err: E) => PromiseLike<Ok<T2>>): AsyncOk<T | T2>;
     orElse<E2>(fn: (err: E) => Err<E2>): Result<T, E2>;
-    orElse<E2>(fn: (err: E) => PromiseLike<Err<E2>>): MaybeAsyncResult<T, E2>;
+    orElse<E2>(fn: (err: E) => PromiseLike<Err<E2>>): AsyncResult<T, E2>;
     orElse<T2, E2>(fn: (err: E) => Result<T2, E2>): Result<T | T2, E2>;
-    orElse<T2, E2>(fn: (err: E) => PromiseLike<Result<T2, E2>>): MaybeAsyncResult<T | T2, E2>;
+    orElse<T2, E2>(fn: (err: E) => PromiseLike<Result<T2, E2>>): AsyncResult<T | T2, E2>;
     orElse<T2, E2>(fn: (err: E) => Result<T2, E2> | PromiseLike<Result<T2, E2>>): Result<T | T2, E2> | AsyncResult<T | T2, E2>;
     orElse<T2, E2>(
         fn: (err: E) => Result<T2, E2> | PromiseLike<Result<T2, E2>>
-    ): Result<T | T2, E2> | AsyncResult<T | T2, E2> | MaybeAsyncResult<T | T2, E2> {
+    ): Result<T | T2, E2> | AsyncResult<T | T2, E2> | AsyncResult<T | T2, E2> {
         if (this.isOk()) return this;
 
         let result = fn(this.error);
@@ -129,10 +178,10 @@ export class ResultImpl<T, E> implements Result<T, E> {
         }
     }
 
-    map<T2>(fn: (val: T) => PromiseLike<T2>): MaybeAsyncResult<T2, E>;
+    map<T2>(fn: (val: T) => PromiseLike<T2>): AsyncResult<T2, E>;
     map<T2>(fn: (val: T) => T2): Result<T2, E>;
     map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Result<T2, E> | AsyncResult<T2, E>;
-    map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Result<T2, E> | AsyncResult<T2, E> | MaybeAsyncResult<T2, E> {
+    map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Result<T2, E> | AsyncResult<T2, E> | AsyncResult<T2, E> {
         if (this.isErr()) return this as any;
 
         let result = fn(this.value);
@@ -144,10 +193,10 @@ export class ResultImpl<T, E> implements Result<T, E> {
         }
     }
 
-    mapErr<E2>(fn: (err: E) => PromiseLike<E2>): MaybeAsyncResult<T, E2>;
+    mapErr<E2>(fn: (err: E) => PromiseLike<E2>): AsyncResult<T, E2>;
     mapErr<E2>(fn: (err: E) => E2): Result<T, E2>;
     mapErr<E2>(fn: (err: E) => E2 | PromiseLike<E2>): Result<T, E2> | AsyncResult<T, E2>;
-    mapErr<E2>(fn: (err: E) => E2 | PromiseLike<E2>): Result<T, E2> | AsyncResult<T, E2> | MaybeAsyncResult<T, E2> {
+    mapErr<E2>(fn: (err: E) => E2 | PromiseLike<E2>): Result<T, E2> | AsyncResult<T, E2> | AsyncResult<T, E2> {
         if (this.isOk()) return this;
 
         let result = fn(this.error);
@@ -176,12 +225,18 @@ export class ResultImpl<T, E> implements Result<T, E> {
     }
 }
 
+/**
+ * Creates an `Ok` result
+ */
 export function Ok<T>(value: T): Ok<T>;
 export function Ok(): Ok<void>;
 export function Ok<T>(value?: T): Ok<T> | Ok<void> {
     return new ResultImpl<T | void, never>(value, Kind.Ok) as Ok<T> | Ok<void>;
 }
 
+/**
+ * Creates an `Err` result
+ */
 export function Err<E>(value: E): Err<E> {
     return new ResultImpl<never, E>(value, Kind.Err);
 }
