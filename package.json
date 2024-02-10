@@ -3,14 +3,14 @@
     "main": "src/index.ts",
     "scripts": {
         "test:watch": "node --require ts-node/register --test --watch '**/*.spec.ts'",
-        "docs": "typedoc --out docs src/index.ts"
+        "docs": "typedoc --out docs src/result/index.ts src/option/index.ts src/await/index.ts"
     },
     "devDependencies": {
         "@types/node": "20.11.16",
         "bun-types": "latest",
         "prettier": "3.2.5",
         "ts-node": "10.9.2",
-        "typedoc": "false0.25.7",
+        "typedoc": "0.25.7",
         "typescript": "5.3.3"
     }
 }
