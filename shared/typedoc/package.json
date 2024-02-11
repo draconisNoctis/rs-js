@@ -1,0 +1,6 @@
+{
+    "name": "@rs-js/typedoc",
+    "exports": {
+        ".": "./typedoc.json"
+    }
+}

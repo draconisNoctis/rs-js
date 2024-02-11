@@ -1,0 +1,6 @@
+{
+    "name": "@rs-js/tsconfig",
+    "exports": {
+        ".": "./tsconfig.json"
+    }
+}

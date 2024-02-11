@@ -173,3 +173,9 @@ dist
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Turbo Cache
+.turbo
+
+# Build Output
+pkg/*/lib

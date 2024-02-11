@@ -1,0 +1,9 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "extends": ["@rs-js/typedoc"],
+    "entryPoints": ["pkg/*"],
+    "name": "RS-JS",
+    "entryPointStrategy": "packages",
+    "includeVersion": false,
+    "out": "./docs"
+}
