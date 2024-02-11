@@ -179,3 +179,6 @@ dist
 
 # Build Output
 pkg/*/lib
+
+# Docs
+/docs
