@@ -90,6 +90,7 @@ __metadata:
   resolution: "@rs-js/option@workspace:pkg/option"
   dependencies:
     "@rs-js/tsconfig": "workspace:*"
+    "@rs-js/typedoc": "workspace:*"
     "@rs-js/utils": "workspace:*"
     "@types/node": "npm:20.11.17"
     ts-node: "npm:10.9.2"
@@ -102,6 +103,7 @@ __metadata:
   resolution: "@rs-js/result@workspace:pkg/result"
   dependencies:
     "@rs-js/tsconfig": "workspace:*"
+    "@rs-js/typedoc": "workspace:*"
     "@rs-js/utils": "workspace:*"
     "@types/node": "npm:20.11.17"
     ts-node: "npm:10.9.2"
@@ -126,6 +128,7 @@ __metadata:
   resolution: "@rs-js/utils@workspace:pkg/utils"
   dependencies:
     "@rs-js/tsconfig": "workspace:*"
+    "@rs-js/typedoc": "workspace:*"
     "@types/node": "npm:20.11.17"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.3.3"
