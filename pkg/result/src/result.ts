@@ -223,3 +223,32 @@ export function Ok<T>(value?: T): Ok<T> | Ok<void> {
 export function Err<E>(value: E): Err<E> {
     return new ErrImpl<E>(value);
 }
+
+export namespace Result {
+    /**
+     * @example
+     * ```typescript
+     * const result = Result.wrap(() => fetch("https://example.com")).mapErr(() => 'FETCH_FAILED' as const);
+     * ```
+     */
+    export function wrap<T>(factory: () => PromiseLike<T>): Result<T, unknown> | AsyncResult<T, unknown>;
+    export function wrap<T>(factory: () => T): Result<T, unknown>;
+    export function wrap<T>(factory: () => PromiseLike<T> | T): Result<T, unknown> | AsyncResult<T, unknown> {
+        try {
+            const result = factory();
+
+            if (isPromise(result)) {
+                return AsyncResultImpl.create(
+                    result.then(
+                        res => Ok(res),
+                        err => Err(err)
+                    )
+                );
+            } else {
+                return Ok(result);
+            }
+        } catch (err: unknown) {
+            return Err(err);
+        }
+    }
+}
