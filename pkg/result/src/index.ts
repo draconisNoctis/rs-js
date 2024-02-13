@@ -1,8 +1,8 @@
 import { AsyncResult, AsyncResultImpl } from './async-result';
-import { Result, OkImpl, ErrImpl } from './result';
+import { ErrImpl, OkImpl, Result } from './result';
 
 export { AsyncErr, AsyncOk, AsyncResult } from './async-result';
-export { Err, Ok, Result } from './result';
+export { Err, ErrImpl, IResult, Ok, OkImpl, Result } from './result';
 
 export function isResult<T = unknown, E = unknown>(val: unknown): val is Result<T, E> | AsyncResult<T, E> {
     return val instanceof OkImpl || val instanceof ErrImpl || val instanceof AsyncResultImpl;

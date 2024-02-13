@@ -2,6 +2,7 @@
     "$schema": "https://typedoc.org/schema.json",
     "extends": ["@rs-js/typedoc"],
     "entryPoints": ["pkg/*"],
+    "exclude": ["pkg/utils"],
     "name": "RS-JS",
     "entryPointStrategy": "packages",
     "includeVersion": false,

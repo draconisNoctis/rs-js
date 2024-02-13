@@ -1,8 +1,8 @@
 import { AsyncOption, AsyncOptionImpl } from './async-option';
-import { Option, SomeImpl, NoneImpl } from './option';
+import { NoneImpl, Option, SomeImpl } from './option';
 
-export { AsyncNone, AsyncSome, AsyncOption } from './async-option';
-export { Some, None, Option } from './option';
+export { AsyncNone, AsyncOption, AsyncSome } from './async-option';
+export { IOption, None, NoneImpl, Option, Some, SomeImpl } from './option';
 
 export function isOption<T = unknown>(val: unknown): val is Option<T> | AsyncOption<T> {
     return val instanceof SomeImpl || val instanceof NoneImpl || val instanceof AsyncOptionImpl;
