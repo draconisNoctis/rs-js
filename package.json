@@ -1,22 +1,23 @@
 {
     "name": "rs-js",
-    "private": true,
-    "scripts": {
-        "test": "turbo test",
-        "build": "turbo clean build test",
-        "docs": "typedoc"
-    },
+    "version": "0.0.1",
     "workspaces": [
         "shared/*",
         "pkg/*"
     ],
+    "scripts": {
+        "build": "turbo clean build test",
+        "docs": "typedoc",
+        "test": "turbo test"
+    },
     "devDependencies": {
+        "@types/bun": "1.0.5",
         "@types/node": "20.11.17",
         "prettier": "3.2.5",
         "prettier-plugin-packagejson": "2.4.10",
-        "turbo": "^1.12.3",
+        "turbo": "1.12.3",
         "typedoc": "0.25.8",
         "typescript": "5.3.3"
     },
-    "packageManager": "yarn@4.1.0"
+    "packageManager": "bun@1.0.19"
 }

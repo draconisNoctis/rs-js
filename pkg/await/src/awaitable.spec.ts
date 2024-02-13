@@ -1,20 +1,19 @@
 import { awaitable } from './awaitable';
-import { it, describe, mock } from 'node:test';
-import assert from 'node:assert';
+import { it, describe, mock, expect } from 'bun:test';
 
 describe('awaitable', () => {
     it('should return properties', async () => {
-        assert(awaitable(Promise.resolve({ foo: 'bar' })).await.foo);
-        assert.equal(await awaitable(Promise.resolve({ foo: 'bar' })).await.foo, 'bar');
+        expect(awaitable(Promise.resolve({ foo: 'bar' })).await.foo).toBeDefined;
+        expect(await awaitable(Promise.resolve({ foo: 'bar' })).await.foo).toEqual('bar');
     });
 
     it('should call method', async () => {
-        const method = mock.fn((a: string) => a.length);
+        const method = mock((a: string) => a.length);
         const obj = { foo: method };
-        assert(awaitable(Promise.resolve(obj)).await.foo);
-        assert.equal(await awaitable(Promise.resolve(obj)).await.foo('foobar'), 6);
-        assert.equal(method.mock.calls.length, 1);
-        assert.deepEqual(method.mock.calls[0].arguments, ['foobar']);
+        expect(awaitable(Promise.resolve(obj)).await.foo).toBeDefined;
+        expect(await awaitable(Promise.resolve(obj)).await.foo('foobar')).toEqual(6);
+        expect(method.mock.calls.length).toEqual(1);
+        expect(method.mock.calls[0]).toEqual(['foobar']);
     });
 
     it('should call method with correct context', async () => {
@@ -24,8 +23,8 @@ describe('awaitable', () => {
                 return this._foo;
             }
         };
-        assert(awaitable(Promise.resolve(obj)).await.foo);
-        assert.equal(await awaitable(Promise.resolve(obj)).await.foo(), 5);
+        expect(awaitable(Promise.resolve(obj)).await.foo).toBeDefined;
+        expect(await awaitable(Promise.resolve(obj)).await.foo()).toEqual(5);
     });
 
     it('should call method with overwritten context', async () => {
@@ -35,6 +34,6 @@ describe('awaitable', () => {
                 return this._foo;
             }
         };
-        assert.equal(await awaitable(Promise.resolve(obj)).await.foo.call({ _foo: 3 }), 3);
+        expect(await awaitable(Promise.resolve(obj)).await.foo.call({ _foo: 3 })).toEqual(3);
     });
 });

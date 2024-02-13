@@ -1,8 +1,7 @@
-import assert from 'node:assert';
 import { isPromise, toString } from '@rs-js/utils';
 import { AsyncErr, AsyncOk, AsyncResult, AsyncResultImpl } from './async-result';
 // @ts-ignore
-import type { Option, Some, None } from '@rs-js/option';
+import type { None, Option, Some } from '@rs-js/option';
 
 declare global {
     var __Option_Some: any;
@@ -145,17 +144,16 @@ export class OkImpl<T> implements IResult<T, never> {
     }
 }
 
+const STACKS = new WeakMap<ErrImpl<unknown>, string>();
+
 export class ErrImpl<E> implements IResult<never, E> {
     get error(): E {
         return this._error as E;
     }
 
     get stack(): string {
-        assert(this.isErr());
-        return this[STACK];
+        return STACKS.get(this) ?? '';
     }
-
-    private readonly [STACK]: string;
 
     constructor(private readonly _error: E) {
         const stackLines = new Error().stack!.split('\n').slice(2);
@@ -163,7 +161,7 @@ export class ErrImpl<E> implements IResult<never, E> {
             stackLines.shift();
         }
 
-        this[STACK] = stackLines.join('\n');
+        STACKS.set(this, stackLines.join('\n'));
     }
 
     isOk(): this is Ok<never> {
@@ -213,7 +211,7 @@ export class ErrImpl<E> implements IResult<never, E> {
     }
 
     unwrap(): never {
-        throw new Error(`Tried to unwrap Err: ${toString(this._error)}\n${this[STACK]}`, { cause: this._error });
+        throw new Error(`Tried to unwrap Err: ${toString(this._error)}\n${this.stack}`, { cause: this._error });
     }
 
     unwrapErr(): E {

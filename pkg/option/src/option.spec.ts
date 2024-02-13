@@ -1,213 +1,176 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
-import { None, Some } from './index';
+import { describe, it, expect } from 'bun:test';
+import { None, Some } from './option';
 
 describe('Option', () => {
     describe('isSome', () => {
         it('should identify Ok result', () => {
-            assert(Some(1).isSome());
-            assert(!Some(1).isNone());
+            expect(Some(1).isSome()).toBeTrue();
+            expect(!Some(1).isNone()).toBeTrue();
         });
     });
 
     describe('isNone', () => {
         it('should identify Err result', () => {
-            assert(None.isNone());
-            assert(!None.isSome());
+            expect(None.isNone()).toBeTrue();
+            expect(!None.isSome()).toBeTrue();
         });
     });
 
     describe('and', () => {
         it('should return mapped Some for outer Some', () => {
-            assert.deepEqual(
-                Some(1).and(() => Some(2)),
-                Some(2)
-            );
+            expect(Some(1).and(() => Some(2))).toEqual(Some(2));
         });
 
         it('should return mapped Some for outer Some (async)', async () => {
-            assert(
-                typeof Reflect.get(
+            expect(
+                Reflect.get(
                     Some(1).and(async () => Some(2)),
                     'then'
-                ) === 'function'
-            );
-            assert.deepEqual(await Some(1).and(async () => Some(2)), Some(2));
+                )
+            ).toBeTypeOf('function');
+            expect(await Some(1).and(async () => Some(2))).toEqual(Some(2));
         });
 
         it('should return mapped None for outer Some', () => {
-            assert.deepEqual(
-                Some(1).and(() => None),
-                None
-            );
+            expect(Some(1).and(() => None)).toEqual(None);
         });
 
         it('should return mapped None for outer Some (async)', async () => {
-            assert(
-                typeof Reflect.get(
+            expect(
+                Reflect.get(
                     Some(1).and(async () => None),
                     'then'
-                ) === 'function'
-            );
-            assert.deepEqual(await Some(1).and(async () => None), None);
+                )
+            ).toBeTypeOf('function');
+            expect(await Some(1).and(async () => None)).toEqual(None);
         });
 
         it('should return outer None for outer None', () => {
-            assert.deepEqual(
-                None.and(() => Some(2)),
-                None
-            );
-            assert.deepEqual(
-                None.and(() => None),
-                None
-            );
+            expect(None.and(() => Some(2))).toEqual(None);
+            expect(None.and(() => None)).toEqual(None);
         });
 
         it('should return outer Err for outer Err (async)', async () => {
-            assert(
-                typeof Reflect.get(
+            expect(
+                Reflect.get(
                     None.and(async () => Some(2)),
                     'then'
-                ) !== 'function'
-            );
-            assert(
-                typeof Reflect.get(
+                )
+            ).not.toBeTypeOf('function');
+            expect(
+                Reflect.get(
                     None.and(async () => None),
                     'then'
-                ) !== 'function'
-            );
-            assert.deepEqual(await None.and(async () => Some(2)), None);
-            assert.deepEqual(await None.and(async () => None), None);
+                )
+            ).not.toBeTypeOf('function');
+            expect(await None.and(async () => Some(2))).toEqual(None);
+            expect(await None.and(async () => None)).toEqual(None);
         });
     });
 
     describe('or', () => {
         it('should return mapped Some for outer None', () => {
-            assert.deepEqual(
-                None.or(() => Some(2)),
-                Some(2)
-            );
+            expect(None.or(() => Some(2))).toEqual(Some(2));
         });
 
         it('should return mapped Some for outer None (async)', async () => {
-            assert.deepEqual(await None.or(async () => Some(2)), Some(2));
+            expect(await None.or(async () => Some(2))).toEqual(Some(2));
         });
 
         it('should return mapped None for outer None', () => {
-            assert.deepEqual(
-                None.or(() => None),
-                None
-            );
+            expect(None.or(() => None)).toEqual(None);
         });
 
         it('should return mapped None for outer None (async)', async () => {
-            assert.deepEqual(await None.or(async () => None), None);
+            expect(await None.or(async () => None)).toEqual(None);
         });
 
         it('should return outer None for outer Some', () => {
-            assert.deepEqual(
-                Some(1).or(() => Some(2)),
-                Some(1)
-            );
-            assert.deepEqual(
-                Some(1).or(() => None),
-                Some(1)
-            );
+            expect(Some(1).or(() => Some(2))).toEqual(Some(1));
+            expect(Some(1).or(() => None)).toEqual(Some(1));
         });
 
         it('should return outer Some for outer Some (async)', async () => {
-            assert(
-                typeof Reflect.get(
+            expect(
+                Reflect.get(
                     Some(1).or(async () => Some(2)),
                     'then'
-                ) !== 'function'
-            );
-            assert(
-                typeof Reflect.get(
+                )
+            ).not.toBeTypeOf('function');
+            expect(
+                Reflect.get(
                     Some(1).or(async () => None),
                     'then'
-                ) !== 'function'
-            );
-            assert.deepEqual(await Some(1).or(async () => Some(2)), Some(1));
-            assert.deepEqual(await Some(1).or(async () => None), Some(1));
+                )
+            ).not.toBeTypeOf('function');
+            expect(await Some(1).or(async () => Some(2))).toEqual(Some(1));
+            expect(await Some(1).or(async () => None)).toEqual(Some(1));
         });
     });
 
     describe('map', () => {
         it('should return mapped value for outer Some', () => {
-            assert.deepEqual(
-                Some(1).map(() => 2),
-                Some(2)
-            );
+            expect(Some(1).map(() => 2)).toEqual(Some(2));
         });
 
         it('should return mapped value for outer Some (async)', async () => {
-            assert.deepEqual(await Some(1).map(async () => 2), Some(2));
+            expect(await Some(1).map(async () => 2)).toEqual(Some(2));
         });
 
         it('should return outer None for outer None', () => {
-            assert.deepEqual(
-                None.map(() => 2),
-                None
-            );
+            expect(None.map(() => 2)).toEqual(None);
         });
 
         it('should return outer None for outer None (async)', async () => {
-            assert.deepEqual(await None.map(async () => 2), None);
+            expect(await None.map(async () => 2)).toEqual(None);
         });
     });
 
     describe('orElse', () => {
         it('should return mapped Some for outer None', () => {
-            assert.deepEqual(
-                None.orElse(() => 2),
-                Some(2)
-            );
+            expect(None.orElse(() => 2)).toEqual(Some(2));
         });
 
         it('should return mapped Some for outer None (async)', async () => {
-            assert.deepEqual(await None.orElse(async () => 2), Some(2));
+            expect(await None.orElse(async () => 2)).toEqual(Some(2));
         });
 
         it('should return outer Some for outer Some', () => {
-            assert.deepEqual(
-                Some(1).orElse(() => 2),
-                Some(1)
-            );
+            expect(Some(1).orElse(() => 2)).toEqual(Some(1));
         });
 
         it('should return outer some for outer Some (async)', async () => {
-            assert.deepEqual(await Some(1).orElse(async () => 2), Some(1));
+            expect(await Some(1).orElse(async () => 2)).toEqual(Some(1));
         });
     });
 
     describe('orNull', () => {
         it('should return mapped value for Some', () => {
-            assert.equal(Some(2).orNull(), 2);
+            expect(Some(2).orNull()).toEqual(2);
         });
 
         it('should return null for None', () => {
-            assert.equal(None.orNull(), null);
+            expect(None.orNull()).toBeNull();
         });
     });
 
     describe('orUndefined', () => {
         it('should return mapped value for Some', () => {
-            assert.equal(Some(2).orUndefined(), 2);
+            expect(Some(2).orUndefined()).toEqual(2);
         });
 
         it('should return undefined for None', () => {
-            assert.equal(None.orUndefined(), undefined);
+            expect(None.orUndefined()).toBeUndefined();
         });
     });
 
     describe('unwrap', () => {
         it('should unwrap Some value', () => {
-            assert.equal(Some(1).unwrap(), 1);
+            expect(Some(1).unwrap()).toEqual(1);
         });
 
         it('should throw error on None value', () => {
-            assert.throws(() => None.unwrap(), /Tried to unwrap None/);
+            expect(() => None.unwrap()).toThrow(/Tried to unwrap None/);
         });
     });
 });

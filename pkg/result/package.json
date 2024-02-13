@@ -12,14 +12,14 @@
     "scripts": {
         "build": "tsc && tsc --project tsconfig.esm.json && echo '{\"type\":\"module\"}' > lib/esm/package.json",
         "clean": "rm -rf lib",
-        "test": "node --require ts-node/register --test '**/*.spec.ts'",
-        "test:coverage": "mkdir -p .coverage && node --require ts-node/register --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=.coverage/lcov.info  '**/*.spec.ts'",
-        "test:watch": "node --require ts-node/register --test --watch '**/*.spec.ts'"
+        "test": "bun test",
+        "test:coverage": "bun test --coverage",
+        "test:watch": "bun test --watch"
     },
     "devDependencies": {
-        "@rs-js/tsconfig": "workspace:*",
-        "@rs-js/typedoc": "workspace:*",
-        "@rs-js/utils": "workspace:*",
+        "@rs-js/tsconfig": "*",
+        "@rs-js/typedoc": "*",
+        "@rs-js/utils": "*",
         "@types/node": "20.11.17",
         "ts-node": "10.9.2",
         "typescript": "5.3.3"

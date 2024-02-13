@@ -19,8 +19,8 @@
         "test:watch": "node --require ts-node/register --test --watch '**/*.spec.ts'"
     },
     "devDependencies": {
-        "@rs-js/tsconfig": "workspace:*",
-        "@rs-js/typedoc": "workspace:*",
+        "@rs-js/tsconfig": "*",
+        "@rs-js/typedoc": "*",
         "@types/node": "20.11.17",
         "ts-node": "10.9.2",
         "typescript": "5.3.3"
