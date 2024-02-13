@@ -1,13 +1,13 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { AsyncOptionImpl } from './async-option';
+import { AsyncNone, AsyncSome, AsyncOptionImpl } from './async-option';
 import { None, Some } from './index';
 
-function AsyncSome<T>(value: T): AsyncOptionImpl<T> {
-    return new AsyncOptionImpl(Promise.resolve(Some(value)));
+function AsyncSome<T>(value: T): AsyncSome<T> {
+    return AsyncOptionImpl.create(Promise.resolve(Some(value))) as AsyncSome<T>;
 }
-function AsyncNone(): AsyncOptionImpl<never> {
-    return new AsyncOptionImpl(Promise.resolve(None));
+function AsyncNone(): AsyncNone {
+    return AsyncOptionImpl.create(Promise.resolve(None)) as AsyncNone;
 }
 
 describe('AsyncOption', () => {

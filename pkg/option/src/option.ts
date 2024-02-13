@@ -1,7 +1,7 @@
 import { isPromise } from '@rs-js/utils';
 import { AsyncNone, AsyncOption, AsyncOptionImpl, AsyncSome } from './async-option';
 
-export interface Option<T> {
+export interface IOption<T> {
     /**
      * Returns `true` if the option is `Some`
      */
@@ -18,12 +18,6 @@ export interface Option<T> {
      * `fn` can return a `Promise` which will return a `AsyncOption`.
      * `fn` *must* return an `Option` or `PromiseLike<Option>`.
      */
-    and<T2>(fn: (val: T) => Some<T2>): Option<T2>;
-    and<T2>(fn: (val: T) => PromiseLike<Some<T2>>): AsyncOption<T2>;
-    and(fn: (val: T) => None): None;
-    and(fn: (val: T) => PromiseLike<None>): AsyncNone;
-    and<T2>(fn: (val: T) => Option<T2>): Option<T2>;
-    and<T2>(fn: (val: T) => PromiseLike<Option<T2>>): AsyncOption<T2>;
     and<T2>(fn: (val: T) => Option<T2> | PromiseLike<Option<T2>>): Option<T2> | AsyncOption<T2>;
 
     /**
@@ -32,12 +26,6 @@ export interface Option<T> {
      * `fn` can return a `Promise` which will return a `AsyncOption`.
      * `fn` *must* return an `Option` or `PromiseLike<Option>`.
      */
-    or<T2>(fn: () => Some<T2>): Some<T | T2>;
-    or<T2>(fn: () => PromiseLike<Some<T2>>): AsyncSome<T | T2>;
-    or(fn: () => None): Option<T>;
-    or(fn: () => PromiseLike<None>): AsyncOption<T>;
-    or<T2>(fn: () => Option<T2>): Option<T | T2>;
-    or<T2>(fn: () => PromiseLike<Option<T2>>): AsyncOption<T | T2>;
     or<T2>(fn: () => Option<T2> | PromiseLike<Option<T2>>): Option<T | T2> | AsyncOption<T | T2>;
 
     /**
@@ -46,8 +34,6 @@ export interface Option<T> {
      * `fn` can return a `Promise` which will return a `AsyncOption`.
      * `fn` *must not* fail and therefor have to return a `T2` or `PromiseLike<T2>`.
      */
-    map<T2>(fn: (val: T) => PromiseLike<T2>): AsyncOption<T2>;
-    map<T2>(fn: (val: T) => T2): Option<T2>;
     map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Option<T2> | AsyncOption<T2>;
 
     /**
@@ -56,8 +42,6 @@ export interface Option<T> {
      * `fn` can return a `Promise` which will return a `AsyncOption`.
      * `fn` *must not* fail and therefor have to return a `T2` or `PromiseLike<T2>`.
      */
-    orElse<T2>(fn: () => PromiseLike<T2>): AsyncOption<T | T2>;
-    orElse<T2>(fn: () => T2): Option<T | T2>;
     orElse<T2>(fn: () => T2 | PromiseLike<T2>): Option<T | T2> | AsyncOption<T | T2>;
 
     orNull(): T | null;
@@ -71,30 +55,7 @@ export interface Option<T> {
     unwrap(): T;
 }
 
-/**
- * Contains the value
- */
-export interface Some<T> extends Option<T> {
-    value: T;
-}
-
-/**
- * Contains the null value
- */
-export interface None extends Option<never> {
-    // map<T2>(fn: (val: unknown) => PromiseLike<T2>): None;
-    // map<T2>(fn: (val: unknown) => T2): None;
-    // map<T2>(fn: (val: unknown) => T2 | PromiseLike<T2>): None;
-    // and<T2>(fn: (val: unknown) => Some<T2>): None;
-    // and<T2>(fn: (val: unknown) => PromiseLike<Some<T2>>): None;
-    // and(fn: (val: unknown) => None): None;
-    // and(fn: (val: unknown) => PromiseLike<None>): None;
-    // and<T2>(fn: (val: unknown) => T2): None;
-    // and<T2>(fn: (val: unknown) => PromiseLike<T2>): None;
-    // and<T2>(fn: (val: unknown) => T2 | PromiseLike<T2>): None;
-}
-
-export class SomeImpl<T> implements Some<T> {
+export class SomeImpl<T> implements IOption<T> {
     constructor(public readonly value: T) {}
 
     isSome(): this is Some<T> {
@@ -105,10 +66,10 @@ export class SomeImpl<T> implements Some<T> {
         return false;
     }
 
-    and<T2>(fn: (val: T) => Some<T2>): Option<T2>;
-    and<T2>(fn: (val: T) => PromiseLike<Some<T2>>): AsyncOption<T2>;
-    and(fn: (val: T) => None): None;
-    and(fn: (val: T) => PromiseLike<None>): AsyncNone;
+    and<T2>(fn: (val: T) => Some<T2>): Some<T2>;
+    and<T2>(fn: (val: T) => PromiseLike<Some<T2>>): AsyncSome<T2>;
+    and<T2>(fn: (val: T) => None): None;
+    and<T2>(fn: (val: T) => PromiseLike<None>): AsyncNone;
     and<T2>(fn: (val: T) => Option<T2>): Option<T2>;
     and<T2>(fn: (val: T) => PromiseLike<Option<T2>>): AsyncOption<T2>;
     and<T2>(fn: (val: T) => Option<T2> | PromiseLike<Option<T2>>): Option<T2> | AsyncOption<T2>;
@@ -116,48 +77,38 @@ export class SomeImpl<T> implements Some<T> {
         let result = fn(this.value);
 
         if (isPromise(result)) {
-            return new AsyncOptionImpl(result);
+            return AsyncOptionImpl.create(result);
         } else {
             return result;
         }
     }
 
-    or<T2>(fn: () => Some<T2>): Some<T | T2>;
-    or<T2>(fn: () => PromiseLike<Some<T2>>): AsyncSome<T | T2>;
-    or(fn: () => None): Option<T>;
-    or(fn: () => PromiseLike<None>): AsyncOption<T>;
-    or<T2>(fn: () => Option<T2>): Option<T | T2>;
-    or<T2>(fn: () => PromiseLike<Option<T2>>): AsyncOption<T | T2>;
-    or<T2>(fn: () => Option<T2> | PromiseLike<Option<T2>>): Option<T | T2> | AsyncOption<T | T2>;
-    or(): Option<T> | AsyncOption<T> {
+    or(fn: unknown): this {
         return this;
     }
 
-    map<T2>(fn: (val: T) => PromiseLike<T2>): AsyncOption<T2>;
-    map<T2>(fn: (val: T) => T2): Option<T2>;
-    map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Option<T2> | AsyncOption<T2>;
-    map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Option<T2> | AsyncOption<T2> | AsyncOption<T2> {
+    map<T2>(fn: (val: T) => PromiseLike<T2>): AsyncSome<T2>;
+    map<T2>(fn: (val: T) => T2): Some<T2>;
+    map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Some<T2> | AsyncSome<T2>;
+    map<T2>(fn: (val: T) => T2 | PromiseLike<T2>): Some<T2> | AsyncSome<T2> | AsyncSome<T2> {
         let result = fn(this.value);
 
         if (isPromise(result)) {
-            return new AsyncOptionImpl(result.then(r => Some(r)));
+            return AsyncOptionImpl.create(result.then(r => Some(r))) as AsyncSome<T2>;
         } else {
             return Some(result);
         }
     }
 
-    orElse<T2>(fn: () => PromiseLike<T2>): AsyncOption<T | T2>;
-    orElse<T2>(fn: () => T2): Option<T | T2>;
-    orElse<T2>(fn: () => T2 | PromiseLike<T2>): Option<T | T2> | AsyncOption<T | T2>;
-    orElse<T2>(_fn: () => T2 | PromiseLike<T2>): Option<T | T2> | AsyncOption<T | T2> {
+    orElse(_fn: unknown): this {
         return this;
     }
 
-    orNull(): T | null {
+    orNull(): T {
         return this.value;
     }
 
-    orUndefined(): T | undefined {
+    orUndefined(): T {
         return this.value;
     }
 
@@ -166,7 +117,7 @@ export class SomeImpl<T> implements Some<T> {
     }
 }
 
-export class NoneImpl implements None {
+export class NoneImpl implements IOption<never> {
     constructor() {}
 
     isSome(): this is Some<never> {
@@ -177,49 +128,39 @@ export class NoneImpl implements None {
         return true;
     }
 
-    and<T2>(fn: (val: never) => Some<T2>): Option<never | T2>;
-    and<T2>(fn: (val: never) => PromiseLike<Some<T2>>): AsyncOption<never>;
-    and(fn: (val: never) => None): None;
-    and(fn: (val: never) => PromiseLike<None>): AsyncNone;
-    and<T2>(fn: (val: never) => Option<T2>): Option<never>;
-    and<T2>(fn: (val: never) => PromiseLike<Option<T2>>): AsyncOption<never>;
-    and<T2>(fn: (val: never) => Option<T2> | PromiseLike<Option<T2>>): Option<never | T2> | AsyncOption<never | T2>;
-    and<T2>(fn: any): Option<never | T2> | AsyncOption<never | T2> {
+    and(fn: unknown): this {
         return this;
     }
 
-    or<T2>(fn: () => Some<T2>): Some<never | T2>;
-    or<T2>(fn: () => PromiseLike<Some<T2>>): AsyncSome<never | T2>;
-    or(fn: () => None): Option<never>;
-    or(fn: () => PromiseLike<None>): AsyncOption<never>;
-    or<T2>(fn: () => Option<T2>): Option<never | T2>;
-    or<T2>(fn: () => PromiseLike<Option<T2>>): AsyncOption<never | T2>;
-    or<T2>(fn: () => Option<T2> | PromiseLike<Option<T2>>): Option<never | T2> | AsyncOption<never | T2>;
+    or<T2>(fn: () => Some<T2>): Some<T2>;
+    or<T2>(fn: () => PromiseLike<Some<T2>>): AsyncSome<T2>;
+    or<T2>(fn: () => None): None;
+    or<T2>(fn: () => PromiseLike<None>): AsyncNone;
+    or<T2>(fn: () => Option<T2>): Option<T2>;
+    or<T2>(fn: () => PromiseLike<Option<T2>>): AsyncOption<T2>;
+    or<T2>(fn: () => Option<T2> | PromiseLike<Option<T2>>): Option<T2> | AsyncOption<T2>;
     or<T2>(fn: () => Option<T2> | PromiseLike<Option<T2>>): Option<T2> | AsyncOption<T2> {
         let result = fn();
 
         if (isPromise(result)) {
-            return new AsyncOptionImpl(result);
+            return AsyncOptionImpl.create(result);
         } else {
             return result;
         }
     }
 
-    map<T2>(fn: (val: never) => PromiseLike<T2>): AsyncOption<T2>;
-    map<T2>(fn: (val: never) => T2): Option<T2>;
-    map<T2>(fn: (val: never) => T2 | PromiseLike<T2>): Option<T2> | AsyncOption<T2>;
-    map<T2>(): Option<T2> | AsyncOption<T2> {
+    map(fn: unknown): this {
         return this;
     }
 
-    orElse<T2>(fn: () => PromiseLike<T2>): AsyncOption<never | T2>;
-    orElse<T2>(fn: () => T2): Option<never | T2>;
-    orElse<T2>(fn: () => T2 | PromiseLike<T2>): Option<never | T2> | AsyncOption<never | T2>;
-    orElse<T2>(fn: () => T2 | PromiseLike<T2>): Option<T2> | AsyncOption<T2> {
+    orElse<T2>(fn: () => PromiseLike<T2>): AsyncSome<T2>;
+    orElse<T2>(fn: () => T2): Some<T2>;
+    orElse<T2>(fn: () => T2 | PromiseLike<T2>): Some<T2> | AsyncSome<T2>;
+    orElse<T2>(fn: () => T2 | PromiseLike<T2>): Some<T2> | AsyncSome<T2> {
         let result = fn();
 
         if (isPromise(result)) {
-            return new AsyncOptionImpl(result.then(r => Some(r)));
+            return AsyncOptionImpl.create(result.then(r => Some(r))) as AsyncSome<T2>;
         } else {
             return Some(result);
         }
@@ -237,6 +178,11 @@ export class NoneImpl implements None {
         throw new Error(`Tried to unwrap None`);
     }
 }
+
+export type Some<T> = SomeImpl<T>;
+export type None = NoneImpl;
+
+export type Option<T> = Some<T> | None;
 
 /**
  * Creates an `Some` option
