@@ -8,21 +8,17 @@ describe('AsyncResult', () => {
         it('should return mapped Ok for outer Ok', async () => {
             assert.deepEqual(await AsyncResultImpl.create(Promise.resolve(Ok(1))).andThen(() => Ok(2)), Ok(2));
         });
-
         it('should return mapped Ok for outer Ok (async)', async () => {
             assert(typeof AsyncResultImpl.create(Promise.resolve(Ok(1))).andThen(async () => Ok(2)).then === 'function');
             assert.deepEqual(await AsyncResultImpl.create(Promise.resolve(Ok(1))).andThen(async () => Ok(2)), Ok(2));
         });
-
         it('should return mapped Err for outer Ok', async () => {
             assert.deepEqual(await AsyncResultImpl.create(Promise.resolve(Ok(1))).andThen(() => Err('err')), Err('err'));
         });
-
         it('should return mapped Err for outer Ok (async)', async () => {
             assert(typeof AsyncResultImpl.create(Promise.resolve(Ok(1))).andThen(async () => Err('err')).then === 'function');
             assert.deepEqual(await AsyncResultImpl.create(Promise.resolve(Ok(1))).andThen(async () => Err('err')), Err('err'));
         });
-
         it('should return outer Err for outer Err', async () => {
             assert.deepEqual(await AsyncResultImpl.create(Promise.resolve(Err('outer-err'))).andThen(() => Ok(2)), Err('outer-err'));
             assert.deepEqual(
@@ -30,7 +26,6 @@ describe('AsyncResult', () => {
                 Err('outer-err')
             );
         });
-
         it('should return outer Err for outer Err (async)', async () => {
             assert(typeof AsyncResultImpl.create(Promise.resolve(Err('outer-err'))).andThen(async () => Ok(2)).then === 'function');
             assert(

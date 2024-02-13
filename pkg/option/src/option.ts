@@ -1,6 +1,11 @@
 import { isPromise } from '@rs-js/utils';
 import { AsyncNone, AsyncOption, AsyncOptionImpl, AsyncSome } from './async-option';
 
+declare global {
+    var __Option_Some: any;
+    var __Option_None: any;
+}
+
 export interface IOption<T> {
     /**
      * Returns `true` if the option is `Some`
@@ -197,3 +202,7 @@ export function Some<T>(value?: T): Some<T> | Some<void> {
  * None option
  */
 export const None: None = new NoneImpl();
+
+// @rs-js/result interop
+globalThis.__Option_Some = Some;
+globalThis.__Option_None = None;

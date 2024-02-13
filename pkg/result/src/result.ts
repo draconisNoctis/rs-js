@@ -1,6 +1,13 @@
 import assert from 'node:assert';
 import { isPromise, toString } from '@rs-js/utils';
 import { AsyncErr, AsyncOk, AsyncResult, AsyncResultImpl } from './async-result';
+// @ts-ignore
+import type { Option, Some, None } from '@rs-js/option';
+
+declare global {
+    var __Option_Some: any;
+    var __Option_None: any;
+}
 
 export interface IResult<T, E> {
     /**
@@ -58,6 +65,8 @@ export interface IResult<T, E> {
      * @throws {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error Error} if the result is `Ok`
      */
     unwrapErr(): E;
+
+    ok: any extends Option<unknown> ? never : () => Option<T>;
 }
 
 const STACK = Symbol('STACK');
@@ -125,6 +134,14 @@ export class OkImpl<T> implements IResult<T, never> {
 
     unwrapErr(): never {
         throw new Error(`Tried to unwrap Ok: ${toString(this._value)}`, { cause: this._value });
+    }
+
+    ok(): Some<T> {
+        if (!globalThis.__Option_Some) {
+            throw new Error('@rs-js/option package required to be loaded. Add `import "@rs-js/option";` to fix this.');
+        }
+
+        return globalThis.__Option_Some(this._value);
     }
 }
 
@@ -201,6 +218,14 @@ export class ErrImpl<E> implements IResult<never, E> {
 
     unwrapErr(): E {
         return this._error;
+    }
+
+    ok(): None {
+        if (!globalThis.__Option_None) {
+            throw new Error('@rs-js/option package required to be loaded. Add `import "@rs-js/option";` to fix this.');
+        }
+
+        return globalThis.__Option_None;
     }
 }
 
